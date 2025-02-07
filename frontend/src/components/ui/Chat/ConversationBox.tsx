@@ -1,17 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useChatStore } from '@/store/useChatStore'
 import { UserMessage } from './UserMessage'
 import { AssistantMessage } from './AssistantMessage'
 import { LoadingMessage } from './LoadingMessage'
 
-interface Message {
-  text: string
-  type: 'user' | 'assistant'
-}
-
 export function ConversationBox() {
   const messages = useChatStore((state) => state.messages)
   const isLoading = useChatStore((state) => state.isLoading)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, isLoading])
 
   return (
     <div className="flex flex-col gap-4">
@@ -23,6 +27,7 @@ export function ConversationBox() {
         )
       )}
       {isLoading && <LoadingMessage />}
+      <div ref={messagesEndRef} />
     </div>
   )
 }

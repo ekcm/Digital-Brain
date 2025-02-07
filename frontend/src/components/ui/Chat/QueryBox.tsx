@@ -4,13 +4,6 @@ import { Input } from '@/components/ui/input'
 import { useChatStore } from '@/store/useChatStore'
 import { SendHorizontal } from 'lucide-react'
 
-interface Message {
-  text: string
-  type: 'user' | 'assistant'
-}
-
-interface QueryBoxProps {}
-
 export function ChatQueryBox() {
   const [query, setQuery] = useState('')
   const sendMessage = useChatStore((state) => state.sendMessage)

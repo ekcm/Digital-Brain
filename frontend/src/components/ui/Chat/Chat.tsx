@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button'
 import { ChatQueryBox } from './QueryBox'
 import { ConversationBox } from './ConversationBox'
 import { useChatStore } from '@/store/useChatStore'
+import { ChatHeader } from './ChatHeader'
 
 interface ChatProps {
   isCollapsed: boolean
@@ -12,25 +12,24 @@ export function Chat({ isCollapsed }: ChatProps) {
 
   return (
     <main
-      className={`flex-1 min-h-screen ${isCollapsed ? 'pl-24' : 'pl-[25%]'} transition-all duration-300 p-4`}
+      className={`flex-1 w-full h-screen ${isCollapsed ? 'pl-24' : 'pl-[25%]'} transition-all duration-300 p-4`}
     >
-      {/* Chat Header */}
+      {/* Chat Container */}
       <div className="h-full rounded-lg bg-neutral-0 p-6 shadow-sm flex flex-col">
-        <div className="flex justify-between items-center">
-          <div className="text-lg font-medium">Chat Interface</div>
-          <Button variant="outline" onClick={clearMessages}>
-            <span className="text-l">New Chat</span>
-          </Button>
-        </div>
-        <div className="h-px bg-neutral-200 my-4" />
-
-        {/* Chat Body */}
-        <div className="flex-1 overflow-auto">
-          <ConversationBox />
+        {/* Header */}
+        <div className="flex-shrink-0">
+          <ChatHeader onClearMessages={clearMessages} />
         </div>
 
-        {/* Chat Input */}
-        <div className="mt-auto">
+        {/* Scrollable Conversation Area */}
+        <div className="flex-1 min-h-0 overflow-y-auto mb-4 pr-2 [scrollbar-gutter:stable] hover:pr-0 transition-[padding] duration-200">
+          <div className="pr-2">
+            <ConversationBox />
+          </div>
+        </div>
+
+        {/* Fixed Chat Input */}
+        <div className="flex-shrink-0">
           <ChatQueryBox />
         </div>
       </div>
