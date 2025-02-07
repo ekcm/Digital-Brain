@@ -28,16 +28,32 @@ export const useChatStore = create<ChatStore>((set) => ({
       // Set loading state
       set({ messages: newMessages, isLoading: true })
 
-      // Simulate API delay
-      setTimeout(() => {
-        set({
-          messages: [
-            ...newMessages,
-            { text: 'This is the output message', type: 'assistant' as const },
-          ],
-          isLoading: false,
+      // Make API request to backend
+      fetch('http://0.0.0.0:8000/v1/query', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          set({
+            messages: [
+              ...newMessages,
+              { text: JSON.stringify(data, null, 2), type: 'assistant' as const },
+            ],
+            isLoading: false,
+          })
         })
-      }, 3000)
+        .catch((error) => {
+          set({
+            messages: [
+              ...newMessages,
+              { text: `Error: ${error.message}`, type: 'assistant' as const },
+            ],
+            isLoading: false,
+          })
+        })
 
       return { messages: newMessages }
     }),
