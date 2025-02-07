@@ -1,19 +1,10 @@
 import { PanelLeft } from 'lucide-react'
-import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
+import { AddSourceButton } from '@/components/ui/AddSource/AddSourceButton'
 
 interface SidebarProps {
   isCollapsed: boolean
   toggleSidebar: () => void
-}
-
-async function addSource() {
-  try {
-    toast.success('Source added')
-  } catch (error) {
-    toast.error('Something went wrong')
-  }
 }
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
@@ -37,15 +28,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
           </Button>
         </div>
         <div className="h-px bg-neutral-200 my-4" />
-        {!isCollapsed && (
-          <Button
-            className="rounded-lg bg-gradient-peach h-16 w-full text-neutral-0 flex gap-2 items-center justify-center"
-            onClick={addSource}
-          >
-            <Plus className="text-neutral-0" />
-            Add Source
-          </Button>
-        )}
+        {!isCollapsed && <AddSourceButton />}
         {!isCollapsed && (
           <div className="mt-4 rounded-lg bg-neutral-50 p-4 flex-1 overflow-auto">
             {/* Content will go here */}

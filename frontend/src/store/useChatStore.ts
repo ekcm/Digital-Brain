@@ -24,14 +24,17 @@ export const useChatStore = create<ChatStore>((set) => ({
     set((state) => {
       // Add user message immediately
       const newMessages = [...state.messages, { text, type: 'user' as const }]
-      
+
       // Set loading state
       set({ messages: newMessages, isLoading: true })
-      
+
       // Simulate API delay
       setTimeout(() => {
         set({
-          messages: [...newMessages, { text: 'This is the output message', type: 'assistant' as const }],
+          messages: [
+            ...newMessages,
+            { text: 'This is the output message', type: 'assistant' as const },
+          ],
           isLoading: false,
         })
       }, 3000)
