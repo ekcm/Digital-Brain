@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Toaster } from '@/components/ui/sonner'
 
 import { SidebarContainer } from '@/components/ui/Sidebar/SidebarContainer'
 
@@ -26,9 +27,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-neutral-50">
-        <SidebarContainer>
-          {children}
-        </SidebarContainer>
+        <SidebarContainer>{children}</SidebarContainer>
+        <Toaster />
       </body>
     </html>
   )
