@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { config } from '../config/env'
 
 export interface Message {
   text: string
@@ -29,18 +30,24 @@ export const useChatStore = create<ChatStore>((set) => ({
       set({ messages: newMessages, isLoading: true })
 
       // Make API request to backend
-      fetch('http://0.0.0.0:8000/v1/query', {
-        method: 'GET',
+      fetch(config.apiUrl + '/query', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ message: text }),
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then((data) => {
           set({
             messages: [
               ...newMessages,
-              { text: JSON.stringify(data, null, 2), type: 'assistant' as const },
+              { text: data.response || data.message || JSON.stringify(data), type: 'assistant' as const },
             ],
             isLoading: false,
           })
