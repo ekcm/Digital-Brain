@@ -1,9 +1,7 @@
-import MainPage from '@/components/MainPage/MainPage'
+'use client'
+
+import { Chat } from '@/components/ui/Chat/Chat'
 
 export default function Home() {
-  return (
-    <div>
-      <MainPage />
-    </div>
-  )
+  return <Chat isCollapsed={false} />
 }
