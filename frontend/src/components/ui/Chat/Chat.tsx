@@ -14,6 +14,7 @@ export function Chat({ isCollapsed }: ChatProps) {
     <main
       className={`flex-1 min-h-screen ${isCollapsed ? 'pl-24' : 'pl-[25%]'} transition-all duration-300 p-4`}
     >
+      {/* Chat Header */}
       <div className="h-full rounded-lg bg-neutral-0 p-6 shadow-sm flex flex-col">
         <div className="flex justify-between items-center">
           <div className="text-lg font-medium">Chat Interface</div>
@@ -22,9 +23,13 @@ export function Chat({ isCollapsed }: ChatProps) {
           </Button>
         </div>
         <div className="h-px bg-neutral-200 my-4" />
+
+        {/* Chat Body */}
         <div className="flex-1 overflow-auto">
           <ConversationBox />
         </div>
+
+        {/* Chat Input */}
         <div className="mt-auto">
           <ChatQueryBox />
         </div>
