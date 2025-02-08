@@ -31,13 +31,15 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Copy and deploy to EC2
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Copy the Docker image to EC2
           cd backend
           scp -o StrictHostKeyChecking=no image.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/
 
           # Deploy on EC2
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             # Load the Docker image
             docker load < image.tar
             
@@ -45,10 +47,11 @@ jobs:
             docker stop digital-brain-backend || true
             docker rm digital-brain-backend || true
             
-            # Run the new container
+            # Run the new container with environment variables
             docker run -d --name digital-brain-backend \
               --restart always \
               -p 8000:8000 \
+              -e OPENAI_API_KEY='${OPENAI_API_KEY}' \
               digital-brain-backend
 
             # Clean up

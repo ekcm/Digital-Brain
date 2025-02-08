@@ -33,9 +33,6 @@ RUN poetry config virtualenvs.create false \
 # Copy the rest of the application
 COPY . .
 
-# Copy .env file
-COPY .env .env
-
 # Expose the port the app runs on
 EXPOSE 8000
 
