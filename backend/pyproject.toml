@@ -6,11 +6,15 @@ authors = ["Elijah Khor <elijahkcm@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 uvicorn = "^0.34.0"
 fastapi = "^0.115.8"
 gunicorn = "^23.0.0"
 python-dotenv = "^1.0.1"
+python-multipart = "^0.0.20"
+langchain-pinecone = "^0.2.2"
+langchain-community = "^0.3.17"
+pdfplumber = "^0.11.5"
 
 
 [build-system]
