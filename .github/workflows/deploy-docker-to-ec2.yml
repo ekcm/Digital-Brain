@@ -1,0 +1,56 @@
+name: Deploy Docker to EC2
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and save Docker image
+        run: |
+          cd backend
+          docker build -t digital-brain-backend .
+          docker save digital-brain-backend > image.tar
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Copy and deploy to EC2
+        run: |
+          # Copy the Docker image to EC2
+          cd backend
+          scp -o StrictHostKeyChecking=no image.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/
+
+          # Deploy on EC2
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Load the Docker image
+            docker load < image.tar
+            
+            # Stop and remove existing container
+            docker stop digital-brain-backend || true
+            docker rm digital-brain-backend || true
+            
+            # Run the new container
+            docker run -d --name digital-brain-backend \
+              --restart always \
+              -p 8000:8000 \
+              digital-brain-backend
+
+            # Clean up
+            rm image.tar
+          EOF
