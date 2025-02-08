@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.post("/query", tags=["query"])
 async def query(request: QueryRequest):
-    return {"message": request.message + " (from backend!!!!!!!!)"}
+    return {"message": request.message + " (from backend!)"}
 
 @router.get("/openai", tags=["query"])
 async def openai():
