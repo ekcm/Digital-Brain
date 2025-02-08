@@ -34,8 +34,15 @@ async def upload_source(
         if not document_chunks:
             return {"error": "Failed to process PDF"}
 
+        # Upload documents to Pinecone
+        db_manager = DatabaseManager()
+        success = await db_manager.upload_documents(document_chunks)
+
+        if not success:
+            return {"error": "Failed to upload to vector database"}
+
         return {
-            "message": f"Successfully processed {file.filename}",
+            "message": f"Successfully processed and uploaded {file.filename}",
             "chunks": len(document_chunks),
             "first_chunk_preview": document_chunks[0]["text"][:200] if document_chunks else None
         }
