@@ -3,7 +3,7 @@ import pdfplumber
 import io
 
 from app.database.database_manager import DatabaseManager
-from app.servicces.text_splitting import TextSplitter
+from app.services.text_splitter import TextSplitter
 
 router = APIRouter(
     prefix="/sources",
