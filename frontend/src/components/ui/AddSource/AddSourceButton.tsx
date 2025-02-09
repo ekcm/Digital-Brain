@@ -14,6 +14,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+import { config } from '@/config/env'
+
 export function AddSourceButton() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -30,8 +32,27 @@ export function AddSourceButton() {
         return
       }
 
-      // TODO: Implement the actual file upload logic here
-      toast.success(`File "${selectedFile.name}" uploaded successfully`)
+      // Create FormData and append the file
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      try {
+        const response = await fetch(config.apiUrl + '/sources', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error(`Upload failed with status: ${response.status}`)
+        }
+
+        toast.success(`File "${selectedFile.name}" uploaded successfully`)
+      } catch (error) {
+        console.error('Upload error:', error)
+        toast.error(`Failed to upload file`)
+        return
+      }
+
       setSelectedFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
