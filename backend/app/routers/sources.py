@@ -3,6 +3,7 @@ import io
 
 from app.database.database_manager import DatabaseManager
 from app.services.text_splitter import TextSplitter
+from app.storage.storage_manager import S3StorageManager
 
 router = APIRouter(
     prefix="/sources",
@@ -33,6 +34,10 @@ async def upload_source(
         if not document_chunks:
             return {"error": "Failed to process PDF"}
 
+        # upload file to s3 bucket
+        storage_manager = S3StorageManager()  # Don't initialize bucket for uploads
+        file_key = storage_manager.upload_file(file_obj)
+
         # Upload documents to Pinecone
         db_manager = DatabaseManager()
         success = await db_manager.upload_documents(document_chunks)
@@ -62,3 +67,11 @@ async def delete_all_sources():
     if not success:
         return {"error": "Failed to delete all documents from Pinecone"}
     return {"message": "All documents deleted successfully"}
+
+@router.post("/s3")
+async def create_bucket():
+    storage_manager = S3StorageManager(init_bucket=True)
+    success = storage_manager._ensure_bucket_exists()
+    if not success:
+        return {"error": "Failed to create bucket"}
+    return {"message": "Bucket created successfully"}
