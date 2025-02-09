@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { config } from '../config/env'
+import { config } from '@/config/env'
 
 export interface Message {
   text: string

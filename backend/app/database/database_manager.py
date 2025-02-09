@@ -97,3 +97,19 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error uploading documents: {e}")
             return False
+
+    async def delete_all_documents(self):
+        """
+        Delete all documents from the Pinecone index
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            if not self.index:
+                return False
+            
+            self.index.delete(delete_all=True)
+            return True
+        except Exception as e:
+            print(f"Error deleting all documents: {e}")
+            return False

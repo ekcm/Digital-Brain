@@ -54,3 +54,11 @@ async def index():
     db_manager = DatabaseManager()
     index = db_manager.index
     return {"message": "Hello from index: " + str(index)}
+
+@router.delete("/")
+async def delete_all_sources():
+    db_manager = DatabaseManager()
+    success = await db_manager.delete_all_documents()
+    if not success:
+        return {"error": "Failed to delete all documents from Pinecone"}
+    return {"message": "All documents deleted successfully"}
