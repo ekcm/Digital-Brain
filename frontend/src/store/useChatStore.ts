@@ -29,6 +29,8 @@ export const useChatStore = create<ChatStore>((set) => ({
       // Set loading state
       set({ messages: newMessages, isLoading: true })
 
+      console.log(config.apiUrl + '/query')
+
       // Make API request to backend
       fetch(config.apiUrl + '/query', {
         method: 'POST',

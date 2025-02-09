@@ -36,6 +36,8 @@ export function AddSourceButton() {
       const formData = new FormData()
       formData.append('file', selectedFile)
 
+      console.log(config.apiUrl + '/sources')
+
       try {
         const response = await fetch(config.apiUrl + '/sources', {
           method: 'POST',
