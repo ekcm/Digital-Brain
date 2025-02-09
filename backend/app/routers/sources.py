@@ -1,5 +1,4 @@
 from fastapi import APIRouter, UploadFile, File
-import pdfplumber
 import io
 
 from app.database.database_manager import DatabaseManager
