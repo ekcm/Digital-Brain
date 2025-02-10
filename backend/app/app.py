@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import query, sources
+from .routers import query, sources, storage
 
 app = FastAPI(
     docs_url="/docs",
@@ -21,5 +21,6 @@ app.add_middleware(
 router = APIRouter(prefix="/v1")
 router.include_router(query.router)
 router.include_router(sources.router)
+router.include_router(storage.router)
 
 app.include_router(router)

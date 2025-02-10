@@ -1,18 +1,13 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile
 import io
-
 from app.database.database_manager import DatabaseManager
-from app.services.text_splitter import TextSplitter
 from app.storage.storage_manager import S3StorageManager
+from app.services.text_splitter import TextSplitter
 
 router = APIRouter(
     prefix="/sources",
     tags=["sources"]
 )
-
-@router.get("/")
-async def sources():
-    return {"message": "Hello from sources"}
 
 @router.post("/")
 async def upload_source(
@@ -34,44 +29,52 @@ async def upload_source(
         if not document_chunks:
             return {"error": "Failed to process PDF"}
 
-        # upload file to s3 bucket
-        storage_manager = S3StorageManager()  # Don't initialize bucket for uploads
+        # Upload file to s3 bucket
+        storage_manager = S3StorageManager(init_bucket=True)  # Ensure bucket exists
         file_key = storage_manager.upload_file(file_obj)
+
+        # Add file_key to each document chunk
+        for chunk in document_chunks:
+            chunk['metadata']['file_key'] = file_key
+            chunk['metadata']['original_filename'] = file.filename
 
         # Upload documents to Pinecone
         db_manager = DatabaseManager()
         success = await db_manager.upload_documents(document_chunks)
-
+        
         if not success:
-            return {"error": "Failed to upload to vector database"}
+            return {"error": "Failed to upload documents to database"}
 
+        # Generate a presigned URL for immediate access
+        file_url = storage_manager.get_file_url(file_key)
+        
         return {
-            "message": f"Successfully processed and uploaded {file.filename}",
-            "chunks": len(document_chunks),
-            "first_chunk_preview": document_chunks[0]["text"][:200] if document_chunks else None
+            "message": "File uploaded successfully",
+            "file_key": file_key,
+            "file_url": file_url
         }
 
     except Exception as e:
-        return {"error": f"Error processing file: {str(e)}"}
-
-@router.get("/index")
-async def index():
-    db_manager = DatabaseManager()
-    index = db_manager.index
-    return {"message": "Hello from index: " + str(index)}
+        print(f"Error in upload: {str(e)}")
+        return {"error": f"Upload failed: {str(e)}"}
 
 @router.delete("/")
 async def delete_all_sources():
+    # Delete from Pinecone
     db_manager = DatabaseManager()
-    success = await db_manager.delete_all_documents()
-    if not success:
-        return {"error": "Failed to delete all documents from Pinecone"}
-    return {"message": "All documents deleted successfully"}
-
-@router.post("/s3")
-async def create_bucket():
-    storage_manager = S3StorageManager(init_bucket=True)
-    success = storage_manager._ensure_bucket_exists()
-    if not success:
-        return {"error": "Failed to create bucket"}
-    return {"message": "Bucket created successfully"}
+    db_success = await db_manager.delete_all_documents()
+    
+    # Delete from S3
+    storage_manager = S3StorageManager()
+    s3_success = storage_manager.delete_all_files()
+    
+    if not db_success or not s3_success:
+        return {
+            "error": "Failed to delete all content",
+            "details": {
+                "pinecone": "Failed" if not db_success else "Success",
+                "s3": "Failed" if not s3_success else "Success"
+            }
+        }
+    
+    return {"message": "Successfully deleted all documents and files"}
