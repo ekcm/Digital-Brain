@@ -6,7 +6,7 @@ router = APIRouter(
     tags=["storage"]
 )
 
-@router.get("/file")
+@router.get("/")
 async def get_all_files():
     try:
         storage_manager = S3StorageManager()
@@ -14,7 +14,7 @@ async def get_all_files():
     except Exception as e:
         return {"error": f"Failed to list files: {str(e)}"}
 
-@router.get("/file/{file_key}")
+@router.get("/{file_key}")
 async def get_presigned_url(file_key: str):
     try:
         storage_manager = S3StorageManager()

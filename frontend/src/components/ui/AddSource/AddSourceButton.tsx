@@ -12,13 +12,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog'
 
 import { config } from '@/config/env'
+import { useFilesStore } from '@/store/useFilesStore'
 
 export function AddSourceButton() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { fetchFiles } = useFilesStore()
 
   async function addSource() {
     try {
@@ -26,7 +28,7 @@ export function AddSourceButton() {
         toast.error('Please select a PDF file')
         return
       }
-      
+
       if (selectedFile.type !== 'application/pdf') {
         toast.error('Please upload a PDF file')
         return
@@ -49,13 +51,15 @@ export function AddSourceButton() {
         }
 
         toast.success(`File "${selectedFile.name}" uploaded successfully`)
+        setSelectedFile(null)
+        // Refresh the files list
+        await fetchFiles()
       } catch (error) {
         console.error('Upload error:', error)
         toast.error(`Failed to upload file`)
         return
       }
 
-      setSelectedFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -73,9 +77,7 @@ export function AddSourceButton() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          className="rounded-lg bg-gradient-peach h-16 w-full text-neutral-0 flex gap-2 items-center justify-center"
-        >
+        <Button className="rounded-lg bg-gradient-peach h-16 w-full text-neutral-0 flex gap-2 items-center justify-center">
           <Plus className="text-neutral-0" />
           Add Source
         </Button>
@@ -102,15 +104,23 @@ export function AddSourceButton() {
           )}
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => {
-            setSelectedFile(null)
-            if (fileInputRef.current) {
-              fileInputRef.current.value = ''
+          <AlertDialogCancel
+            onClick={() => {
+              setSelectedFile(null)
+              if (fileInputRef.current) {
+                fileInputRef.current.value = ''
+              }
+            }}
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={addSource}
+            className={
+              !selectedFile
+                ? 'neutral-100 cursor-not-allowed'
+                : 'bg-gradient-peach hover:bg-gradient-peach/90'
             }
-          }}>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={addSource} 
-            className={!selectedFile ? 'neutral-100 cursor-not-allowed' : 'bg-gradient-peach hover:bg-gradient-peach/90'}
             disabled={!selectedFile}
           >
             Upload PDF
