@@ -187,9 +187,15 @@ class S3StorageManager:
                         # Generate a presigned URL for each file
                         file_url = self.get_file_url(obj['Key'])
                         
+                        # Extract original filename from the key
+                        # Key format: YYYYMMDD_HHMMSS_uuid8_original_filename.pdf
+                        parts = obj['Key'].split('_', 3)
+                        original_filename = parts[3] if len(parts) > 3 else obj['Key']
+                        
                         # Add file metadata
                         files.append({
                             'key': obj['Key'],
+                            'filename': original_filename,
                             'size': obj['Size'],
                             'last_modified': obj['LastModified'].isoformat(),
                             'url': file_url
