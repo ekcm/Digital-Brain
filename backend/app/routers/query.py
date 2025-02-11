@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Union, Any
 from app.services.hyde_generator import HydeGenerator
 from app.database.retriever import Retriever
+from app.services.response_generator import ResponseGenerator
 
 class QueryRequest(BaseModel):
     """Request model for query endpoint"""
@@ -11,6 +12,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     """Response model for query endpoint"""
     query: str
+    response: str
     matches: List[Dict[str, Any]]
 
 router = APIRouter(
@@ -27,8 +29,18 @@ async def query(request: QueryRequest) -> Union[QueryResponse, Dict[str, str]]:
         retriever = Retriever()
         matches = await retriever.retrieve(query_embedding)
         
+        response_generator = ResponseGenerator()
+        formatted_documents = await response_generator.format_documents(matches, request.message)
+        
+        response = await response_generator.generate_response(
+            formatted_documents["context"],
+            formatted_documents["sources"],
+            request.message
+        )
+        
         return QueryResponse(
             query=request.message,
+            response=response,
             matches=[
                 {
                     "text": match.text,
