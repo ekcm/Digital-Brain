@@ -23,7 +23,7 @@ export function ConversationBox() {
         message.type === 'user' ? (
           <UserMessage key={index} text={message.text} />
         ) : (
-          <AssistantMessage key={index} text={message.text} />
+          <AssistantMessage key={index} text={message.text} sources={message.sources} />
         )
       )}
       {isLoading && <LoadingMessage />}

@@ -1,9 +1,15 @@
 import { create } from 'zustand'
 import { config } from '@/config/env'
 
+export interface Source {
+  name: string
+  file_name: string
+}
+
 export interface Message {
   text: string
   type: 'user' | 'assistant'
+  sources?: Source[]
 }
 
 interface ChatStore {
@@ -49,7 +55,11 @@ export const useChatStore = create<ChatStore>((set) => ({
           set({
             messages: [
               ...newMessages,
-              { text: data.response || data.message || JSON.stringify(data), type: 'assistant' as const },
+              { 
+                text: data.response, 
+                type: 'assistant' as const,
+                sources: data.sources 
+              },
             ],
             isLoading: false,
           })
@@ -58,7 +68,11 @@ export const useChatStore = create<ChatStore>((set) => ({
           set({
             messages: [
               ...newMessages,
-              { text: `Error: ${error.message}`, type: 'assistant' as const },
+              { 
+                text: `Error: ${error.message}`, 
+                type: 'assistant' as const,
+                sources: []
+              },
             ],
             isLoading: false,
           })
