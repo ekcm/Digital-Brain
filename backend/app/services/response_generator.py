@@ -1,11 +1,30 @@
 from typing import List, Dict, Any
 from app.database.retriever import SearchResult
-from langchain.prompts import PromptTemplate
-from langchain_openai import OpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain.output_parsers import ResponseSchema, StructuredOutputParser
+
+response_schema = [
+    ResponseSchema(
+        name="response", 
+        description="The detailed response generated from the context. MUST include inline citations using [Source X] format", 
+        type="string"
+    ),
+    ResponseSchema(
+        name="sources", 
+        description="List of source numbers (as integers) that were cited in the response using [Source X] format", 
+        type="array"
+    )
+]
+
+output_parser = StructuredOutputParser.from_response_schemas(response_schema)
 
 class ResponseGenerator:
     def __init__(self):
-        self.llm = OpenAI(temperature=0.7)
+        self.llm = ChatOpenAI(
+            temperature=0.7,
+            model="gpt-4o-mini"
+        )
 
     async def format_documents(self, retrieved_docs: List[SearchResult], query: str) -> Dict[str, Any]:
         formatted_context = ""
@@ -23,33 +42,38 @@ class ResponseGenerator:
         return {"context": formatted_context, "sources": sources}
 
     async def generate_response(self, context: str, sources: List[Dict[str, str]], query: str) -> str:
-        prompt = PromptTemplate.from_template(
-            """You are a helpful assistant that generates responses based on provided sources. Follow these rules:
+        format_instructions = output_parser.get_format_instructions()
+        
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are a helpful assistant that generates responses based on provided sources. Your response MUST follow these rules:
 
             1. Use information ONLY from the provided sources
-            2. Cite sources inline using [Source X] format
+            2. In the 'response' field, you MUST cite sources inline using [Source X] format for EVERY piece of information
             3. If multiple sources support a point, cite all of them: [Source 1, Source 2]
             4. If you're unsure or the sources don't contain relevant information, say so
-            5. At the end, list all sources used and their filenames
+            5. In the 'sources' field, include ONLY the source numbers you actually cited in your response
             
-            Context:
+            {format_instructions}"""),
+            ("user", """Context:
             {context}
 
-            Query: {query}
-
-            Response (with inline citations):"""
-        )
+            Query: {query}""")
+        ])
 
         chain = prompt | self.llm
         
         response = await chain.ainvoke({
             "context": context,
-            "query": query
+            "query": query,
+            "format_instructions": format_instructions
         })
+
+        parsed_response = output_parser.parse(response.content)
         
-        # Add source filenames at the end
-        response_with_sources = response + "\n\nSources Referenced:\n"
-        for source in sources:
-            response_with_sources += f"{source['name']}: {source['file_name']}\n"
+        response_with_sources = parsed_response["response"] + "\n\nSources Referenced:\n"
+        for source_num in parsed_response["sources"]:
+            if 0 <= source_num - 1 < len(sources):  
+                source = sources[source_num - 1]
+                response_with_sources += f"{source['name']}: {source['file_name']}\n"
         
         return response_with_sources
