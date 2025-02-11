@@ -113,3 +113,35 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error deleting all documents: {e}")
             return False
+
+    def get_file_key_by_name(self, filename: str) -> Optional[str]:
+        """
+        Search for a file's key in the database using its original filename.
+        
+        Args:
+            filename (str): The original filename to search for
+            
+        Returns:
+            Optional[str]: The file_key if found, None otherwise
+        """
+        try:
+            # Query the index with a filter for the original filename
+            query_response = self.index.query(
+                vector=[0] * 1536,  
+                top_k=1,
+                filter={
+                    "original_filename": {"$eq": filename}
+                },
+                include_metadata=True
+            )
+            
+            # Check if we got any matches
+            if query_response.matches and len(query_response.matches) > 0:
+                # Return the file_key from the first match's metadata
+                return query_response.matches[0].metadata.get("file_key")
+                
+            return None
+            
+        except Exception as e:
+            print(f"Error searching for file key: {str(e)}")
+            return None

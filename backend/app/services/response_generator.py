@@ -3,6 +3,10 @@ from app.database.retriever import SearchResult
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
+import logging
+from ..routers.storage import get_presigned_url_by_name
+
+logger = logging.getLogger(__name__)
 
 response_schema = [
     ResponseSchema(
@@ -71,17 +75,31 @@ class ResponseGenerator:
         parsed_response = output_parser.parse(response.content)
         
         referenced_sources = []
+        unique_filenames = set()
+        for source_num in parsed_response["sources"]:
+            if 0 <= source_num - 1 < len(sources):
+                source = sources[source_num - 1]
+                unique_filenames.add(source["file_name"])
+        
+        file_urls = {}
+        for filename in unique_filenames:
+            try:
+                result = await get_presigned_url_by_name(filename)
+                file_urls[filename] = result["file_url"]
+            except Exception as e:
+                logger.error(f"Failed to get presigned URL for {filename}: {str(e)}")
+        
         for source_num in parsed_response["sources"]:
             if 0 <= source_num - 1 < len(sources):
                 source = sources[source_num - 1]
                 referenced_sources.append({
                     "name": source["name"],
-                    "file_name": source["file_name"]
+                    "file_name": source["file_name"],
+                    "url": file_urls.get(source["file_name"])
                 })
         
         response_output = {
             "response": parsed_response["response"],
             "sources": referenced_sources
         }
-        print(response_output)
         return response_output
