@@ -13,6 +13,7 @@ class Source(BaseModel):
     """Source information"""
     name: str
     file_name: str
+    url: str
 
 class QueryResponse(BaseModel):
     """Response model for query endpoint"""

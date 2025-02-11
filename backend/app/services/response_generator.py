@@ -97,9 +97,16 @@ class ResponseGenerator:
                     "file_name": source["file_name"],
                     "url": file_urls.get(source["file_name"])
                 })
-        
+
         response_output = {
             "response": parsed_response["response"],
-            "sources": referenced_sources
+            "sources": [
+                {
+                    "name": source["name"],
+                    "file_name": source["file_name"],
+                    "url": source["url"]
+                } for source in referenced_sources
+            ]
         }
+
         return response_output
