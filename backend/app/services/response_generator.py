@@ -41,7 +41,7 @@ class ResponseGenerator:
 
         return {"context": formatted_context, "sources": sources}
 
-    async def generate_response(self, context: str, sources: List[Dict[str, str]], query: str) -> str:
+    async def generate_response(self, context: str, sources: List[Dict[str, str]], query: str) -> Dict[str, Any]:
         format_instructions = output_parser.get_format_instructions()
         
         prompt = ChatPromptTemplate.from_messages([
@@ -70,10 +70,18 @@ class ResponseGenerator:
 
         parsed_response = output_parser.parse(response.content)
         
-        response_with_sources = parsed_response["response"] + "\n\nSources Referenced:\n"
+        referenced_sources = []
         for source_num in parsed_response["sources"]:
-            if 0 <= source_num - 1 < len(sources):  
+            if 0 <= source_num - 1 < len(sources):
                 source = sources[source_num - 1]
-                response_with_sources += f"{source['name']}: {source['file_name']}\n"
+                referenced_sources.append({
+                    "name": source["name"],
+                    "file_name": source["file_name"]
+                })
         
-        return response_with_sources
+        response_output = {
+            "response": parsed_response["response"],
+            "sources": referenced_sources
+        }
+        print(response_output)
+        return response_output

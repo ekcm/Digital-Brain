@@ -9,11 +9,15 @@ class QueryRequest(BaseModel):
     """Request model for query endpoint"""
     message: str
 
+class Source(BaseModel):
+    """Source information"""
+    name: str
+    file_name: str
+
 class QueryResponse(BaseModel):
     """Response model for query endpoint"""
-    query: str
     response: str
-    matches: List[Dict[str, Any]]
+    sources: List[Source]
 
 router = APIRouter(
     prefix="/query",
@@ -37,19 +41,21 @@ async def query(request: QueryRequest) -> Union[QueryResponse, Dict[str, str]]:
             formatted_documents["sources"],
             request.message
         )
+
+        return response
         
-        return QueryResponse(
-            query=request.message,
-            response=response,
-            matches=[
-                {
-                    "text": match.text,
-                    "score": match.score,
-                    "file_name": match.file_name,
-                    "file_key": match.file_key
-                }
-                for match in matches
-            ]
-        )
+        # return QueryResponse(
+        #     query=request.message,
+        #     response=response,
+        #     matches=[
+        #         {
+        #             "text": match.text,
+        #             "score": match.score,
+        #             "file_name": match.file_name,
+        #             "file_key": match.file_key
+        #         }
+        #         for match in matches
+        #     ]
+        # )
     except Exception as e:
         return {"error": f"Query failed: {str(e)}"}
