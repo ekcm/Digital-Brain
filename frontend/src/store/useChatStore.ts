@@ -4,6 +4,7 @@ import { config } from '@/config/env'
 export interface Source {
   name: string
   file_name: string
+  url: string
 }
 
 export interface Message {
