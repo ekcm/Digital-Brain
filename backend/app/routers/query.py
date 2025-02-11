@@ -24,13 +24,8 @@ async def query(request: QueryRequest) -> Union[QueryResponse, Dict[str, str]]:
         hyde_generator = HydeGenerator()
         query_embedding = hyde_generator.generate_hyde_embeddings(request.message)
         
-        # Retrieve similar documents
         retriever = Retriever()
-        matches = await retriever.retrieve(
-            query_embedding=query_embedding,
-            top_k=3,
-            score_threshold=0.5  # Only return results with >0.5 similarity
-        )
+        matches = await retriever.retrieve(query_embedding)
         
         return QueryResponse(
             query=request.message,
