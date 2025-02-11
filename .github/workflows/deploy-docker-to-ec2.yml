@@ -34,28 +34,49 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           # Copy the Docker image to EC2
           cd backend
-          scp -C -o StrictHostKeyChecking=no image.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/
-
+          echo "Copying Docker image to EC2..."
+          scp -v -C -o StrictHostKeyChecking=no image.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/
+          
           # Deploy on EC2
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # Load the Docker image
+          echo "Starting deployment on EC2..."
+          ssh -v -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            set -e  # Exit on any error
+            echo "Loading Docker image..."
             docker load < image.tar
             
-            # Stop and remove existing container
+            echo "Stopping existing container..."
             docker stop digital-brain-backend || true
             docker rm digital-brain-backend || true
             
-            # Run the new container with environment variables
+            echo "Starting new container..."
             docker run -d --name digital-brain-backend \
               --restart always \
               -p 8000:8000 \
               -e OPENAI_API_KEY='${OPENAI_API_KEY}' \
               -e PINECONE_API_KEY='${PINECONE_API_KEY}' \
+              -e AWS_ACCESS_KEY_ID='${AWS_ACCESS_KEY_ID}' \
+              -e AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}' \
+              -e AWS_BUCKET_NAME='${AWS_BUCKET_NAME}' \
+              -e AWS_REGION='${AWS_REGION}' \
               digital-brain-backend
 
-            # Clean up
+            # Verify container is running
+            echo "Verifying container status..."
+            if ! docker ps | grep -q digital-brain-backend; then
+              echo "Container failed to start. Here are the logs:"
+              docker logs digital-brain-backend
+              exit 1
+            fi
+
+            echo "Cleaning up..."
             rm image.tar
+            
+            echo "Deployment completed successfully!"
           EOF
