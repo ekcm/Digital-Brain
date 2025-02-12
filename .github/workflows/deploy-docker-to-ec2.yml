@@ -47,16 +47,29 @@ jobs:
           # Deploy on EC2
           echo "Starting deployment on EC2..."
           ssh -v -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            set -e  # Exit on any error
-            echo "Loading Docker image..."
-            docker load < image.tar
+            set -e  
             
-            echo "Stopping existing container..."
-            docker stop digital-brain-backend || true
-            docker rm digital-brain-backend || true
-            
+            echo "Checking if an existing container is running..."
+            if docker ps | grep -q digital-brain-backend; then
+              echo "Backing up existing container..."
+              docker rename digital-brain-backend digital-brain-backend-backup
+            fi
+
+            echo "Loading new Docker image..."
+            if ! docker load < image.tar; then
+              echo "Failed to load new Docker image. Exiting..."
+              exit 1
+            fi
+
+            echo "Stopping and removing old container..."
+            docker stop digital-brain-backend-backup || true
+            docker rm digital-brain-backend-backup || true
+
+            echo "Removing old Docker images..."
+            docker image prune -af || true
+
             echo "Starting new container..."
-            docker run -d --name digital-brain-backend \
+            if ! docker run -d --name digital-brain-backend \
               --restart always \
               -p 8000:8000 \
               -e OPENAI_API_KEY='${OPENAI_API_KEY}' \
@@ -65,18 +78,25 @@ jobs:
               -e AWS_SECRET_ACCESS_KEY='${AWS_SECRET_ACCESS_KEY}' \
               -e AWS_BUCKET_NAME='${AWS_BUCKET_NAME}' \
               -e AWS_REGION='${AWS_REGION}' \
-              digital-brain-backend
+              digital-brain-backend; then
 
-            # Verify container is running
-            echo "Verifying container status..."
-            if ! docker ps | grep -q digital-brain-backend; then
-              echo "Container failed to start. Here are the logs:"
-              docker logs digital-brain-backend
+              echo "Failed to start the new container. Rolling back..."
+              docker rename digital-brain-backend-backup digital-brain-backend
+              docker start digital-brain-backend
               exit 1
             fi
 
-            echo "Cleaning up..."
-            rm image.tar
+            echo "Verifying container status..."
+            if ! docker ps | grep -q digital-brain-backend; then
+              echo "New container failed to start. Rolling back..."
+              docker rename digital-brain-backend-backup digital-brain-backend
+              docker start digital-brain-backend
+              exit 1
+            fi
+
+            echo "Cleaning up old backups..."
+            docker rm -f digital-brain-backend-backup || true
+            rm -f image.tar
             
             echo "Deployment completed successfully!"
           EOF
