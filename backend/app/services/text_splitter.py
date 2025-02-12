@@ -34,8 +34,10 @@ class TextSplitter:
             # Convert chunks to dictionary format
             documents = []
             for i, chunk in enumerate(chunks):
+                document_id = file.filename.replace(" ", "_").replace(".", "_")
+                chunk_id = f"{document_id}_chunk_{i}"
                 documents.append({
-                    "chunk_id": f"chunk_{i}",
+                    "chunk_id": chunk_id,
                     "text": chunk.page_content,
                     "metadata": {
                         "source": file.filename,
