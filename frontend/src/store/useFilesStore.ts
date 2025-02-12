@@ -26,7 +26,7 @@ export const useFilesStore = create<FilesStore>((set) => ({
   fetchFiles: async () => {
     set({ isLoading: true })
     try {
-      const response = await fetch(`${config.apiUrl}/storage/`)
+      const response = await fetch(`${config.apiUrl}/storage`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

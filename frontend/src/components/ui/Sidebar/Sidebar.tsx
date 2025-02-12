@@ -32,7 +32,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
   const handleDeleteAllSources = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/sources/`, {
+      const response = await fetch(`${config.apiUrl}/sources`, {
         method: 'DELETE',
       });
       
