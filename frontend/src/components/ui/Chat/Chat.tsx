@@ -22,8 +22,8 @@ export function Chat({ isCollapsed }: ChatProps) {
         </div>
 
         {/* Scrollable Conversation Area */}
-        <div className="flex-1 min-h-0 overflow-y-auto mb-4 pr-2 [scrollbar-gutter:stable] hover:pr-0 transition-[padding] duration-200">
-          <div className="pr-2">
+        <div className="flex-1 min-h-0 overflow-y-auto mb-4 [scrollbar-gutter:stable]">
+          <div className="pr-4">
             <ConversationBox />
           </div>
         </div>

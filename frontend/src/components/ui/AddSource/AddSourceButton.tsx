@@ -13,12 +13,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { RotateCw } from 'lucide-react';
 
 import { config } from '@/config/env'
 import { useFilesStore } from '@/store/useFilesStore'
 
 export function AddSourceButton() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { fetchFiles } = useFilesStore()
 
@@ -34,6 +36,7 @@ export function AddSourceButton() {
         return
       }
 
+      setIsLoading(true)
       // Create FormData and append the file
       const formData = new FormData()
       formData.append('file', selectedFile)
@@ -58,6 +61,8 @@ export function AddSourceButton() {
         console.error('Upload error:', error)
         toast.error(`Failed to upload file`)
         return
+      } finally {
+        setIsLoading(false)
       }
 
       if (fileInputRef.current) {
@@ -65,6 +70,7 @@ export function AddSourceButton() {
       }
     } catch (error) {
       toast.error('Failed to upload file')
+      setIsLoading(false)
     }
   }
 
@@ -77,9 +83,17 @@ export function AddSourceButton() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="rounded-lg bg-gradient-peach h-16 w-full text-neutral-0 flex gap-2 items-center justify-center">
-          <Plus className="text-neutral-0" />
-          Add Source
+        <Button
+          className={`rounded-lg bg-gradient-peach h-16 w-full text-neutral-0 flex gap-2 items-center justify-center ${
+            isLoading ? 'cursor-not-allowed' : ''
+          }`}
+        >
+          {isLoading ? (
+            <RotateCw className="animate-spin h-5 w-5 text-neutral-0" />
+          ) : (
+            <Plus className="text-neutral-0" />
+          )}
+          {isLoading ? 'Uploading...' : 'Add Source'}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="bg-white">
@@ -117,13 +131,13 @@ export function AddSourceButton() {
           <AlertDialogAction
             onClick={addSource}
             className={
-              !selectedFile
+              !selectedFile || isLoading
                 ? 'neutral-100 cursor-not-allowed'
                 : 'bg-gradient-peach hover:bg-gradient-peach/90'
             }
-            disabled={!selectedFile}
+            disabled={!selectedFile || isLoading}
           >
-            Upload PDF
+            {isLoading ? 'Uploading...' : 'Upload PDF'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
