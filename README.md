@@ -40,3 +40,7 @@ NEXT_PUBLIC_BACKEND_API_URL=http://0.0.0.0:8000/v1 # reference for local develop
 ```sh
 docker-compose up -d
 ```
+
+4. Access the application on the Frontend at `http://localhost:3000`
+
+You can also access the backend api docs at `http://localhost:8000/docs`
