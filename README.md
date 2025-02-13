@@ -3,6 +3,9 @@
   A simple RAG application designed to upload and query your PDF files, built with Python and Next.js, hosted on AWS and Vercel.
 </p>
 
+![image](https://github.com/user-attachments/assets/d297fa49-0749-45ff-a81a-361e5082591d)
+
+
 ### Built With
 * Python
 * FastAPI
