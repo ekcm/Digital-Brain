@@ -5,6 +5,7 @@ export interface Source {
   name: string
   file_name: string
   url: string
+  content: string
 }
 
 export interface Message {

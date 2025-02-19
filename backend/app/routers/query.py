@@ -14,6 +14,7 @@ class Source(BaseModel):
     name: str
     file_name: str
     url: str
+    content: str
 
 class QueryResponse(BaseModel):
     """Response model for query endpoint"""
@@ -42,21 +43,6 @@ async def query(request: QueryRequest) -> Union[QueryResponse, Dict[str, str]]:
             formatted_documents["sources"],
             request.message
         )
-
         return response
-        
-        # return QueryResponse(
-        #     query=request.message,
-        #     response=response,
-        #     matches=[
-        #         {
-        #             "text": match.text,
-        #             "score": match.score,
-        #             "file_name": match.file_name,
-        #             "file_key": match.file_key
-        #         }
-        #         for match in matches
-        #     ]
-        # )
     except Exception as e:
         return {"error": f"Query failed: {str(e)}"}

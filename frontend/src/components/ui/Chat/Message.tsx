@@ -29,7 +29,7 @@ export function Message({ text, className, sources }: MessageProps) {
               <span
                 key={idx}
                 className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 cursor-pointer"
-                title={`${sources[num - 1].name} (${sources[num - 1].file_name})`}
+                title={sources[num - 1].content}
                 onClick={() =>
                   sources[num - 1].url &&
                   window.open(sources[num - 1].url, '_blank')

@@ -104,7 +104,8 @@ class ResponseGenerator:
                 {
                     "name": source["name"],
                     "file_name": source["file_name"],
-                    "url": source["url"]
+                    "url": source["url"],
+                    "content": next((s["content"] for s in sources if s["name"] == source["name"]), None)
                 } for source in referenced_sources
             ]
         }
