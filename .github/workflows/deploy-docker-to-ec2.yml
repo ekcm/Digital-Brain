@@ -80,15 +80,19 @@ jobs:
               -e AWS_REGION='${AWS_REGION}' \
               digital-brain-backend; then
 
-              echo "Failed to start the new container. Rolling back..."
+              echo "Failed to start the new container. Viewing logs..."
+              docker logs digital-brain-backend
+              echo "Rolling back..."
               docker rename digital-brain-backend-backup digital-brain-backend
               docker start digital-brain-backend
               exit 1
             fi
 
-            echo "Verifying container status..."
+            # Verifying container status...
             if ! docker ps | grep -q digital-brain-backend; then
-              echo "New container failed to start. Rolling back..."
+              echo "New container failed to start. Viewing logs..."
+              docker logs digital-brain-backend
+              echo "Rolling back..."
               docker rename digital-brain-backend-backup digital-brain-backend
               docker start digital-brain-backend
               exit 1
